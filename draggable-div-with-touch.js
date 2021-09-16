@@ -74,10 +74,6 @@
                 var pos = $(this).position();
 
                 //VDWWD: move div to top with z-index
-                var $elementZindex = $element.css('z-index');
-                if (isNaN($elementZindex)) {
-                    $elementZindex = z_index;
-                }
                 z_index++;
                 $element.css('z-index', z_index);
 
@@ -170,13 +166,8 @@
                 $element.trigger("dragstart", pos);
 
                 //VDWWD: move div to top with z-index
-                var $elementZindex = $element.css('z-index');
-                if (isNaN($elementZindex)) {
-                    $elementZindex = z_index;
-                }
                 z_index++;
                 $element.css('z-index', z_index);
-                console.log(z_index)
 
                 //VDWWD: turned off preventDefault otherwise input elements in the div won't work
                 //e.preventDefault();
