@@ -4,6 +4,7 @@
     var margin = 10;
     var extra_margin_right = 0;
     var extra_margin_bottom = 5;
+    var z_index = 100;
 
     //VDWWD: extra margin right when there is a vertical scrollbar
     if (document.body.scrollHeight > window.innerHeight) {
@@ -35,7 +36,7 @@
         }
 
         this.each(function () {
-            var element = $(this);
+            var $element = $(this);
             var offset = null;
             var draggingTouchId = null;
 
@@ -51,31 +52,44 @@
                     if (touch.identifier != draggingTouchId) {
                         continue;
                     }
-                    element.trigger("dragend", {
+
+                    $element.trigger("dragend", {
                         top: orig.changedTouches[0].pageY - offset.y,
                         left: orig.changedTouches[0].pageX - offset.x
                     });
+
                     draggingTouchId = null;
                 }
             };
 
-            element.bind("touchstart.draggableTouch", function (e) {
+            $element.bind("touchstart.draggableTouch", function (e) {
                 var orig = e.originalEvent;
-                // if this element is already being dragged, we can early exit, otherwise
+                // if this element is already being dragged, we can exit early, otherwise
                 // we need to store which touch started dragging the element
                 if (draggingTouchId) {
                     return;
-                } else {
-                    draggingTouchId = orig.changedTouches[0].identifier;
                 }
+
+                draggingTouchId = orig.changedTouches[0].identifier;
                 var pos = $(this).position();
+
+                //VDWWD: move div to top with z-index
+                var $elementZindex = $element.css('z-index');
+                if (isNaN($elementZindex)) {
+                    $elementZindex = z_index;
+                }
+                z_index++;
+                $element.css('z-index', z_index);
+
                 offset = {
                     x: orig.changedTouches[0].pageX - pos.left,
                     y: orig.changedTouches[0].pageY - pos.top
                 };
-                element.trigger("dragstart", pos);
+
+                $element.trigger("dragstart", pos);
             });
-            element.bind("touchmove.draggableTouch", function (e) {
+
+            $element.bind("touchmove.draggableTouch", function (e) {
                 e.preventDefault();
                 var orig = e.originalEvent;
 
@@ -93,11 +107,13 @@
                     //});
 
                     //VDWWD: use the setCss function
-                    setCss(element, touch.pageY - offset.y, touch.pageX - offset.x);
+                    setCss($element, touch.pageY - offset.y, touch.pageX - offset.x);
                 }
             });
-            element.bind("touchend.draggableTouch touchcancel.draggableTouch", end);
+
+            $element.bind("touchend.draggableTouch touchcancel.draggableTouch", end);
         });
+
         return this;
     };
 
@@ -118,66 +134,79 @@
         }
 
         this.each(function () {
-            var element = $(this);
+            var $element = $(this);
             var offset = null;
 
             var move = function (e) {
-                //element.css({
+                //$element.css({
                 //    top: e.pageY - offset.y,
                 //    left: e.pageX - offset.x,
                 //});
 
                 //VDWWD: use the setCss function
-                setCss(element, e.pageY - offset.y, e.pageX - offset.x);
+                setCss($element, e.pageY - offset.y, e.pageX - offset.x);
             };
+
             var up = function (e) {
-                element.unbind("mouseup.draggableTouch", up);
+                $element.unbind("mouseup.draggableTouch", up);
                 $(document).unbind("mousemove.draggableTouch", move);
-                element.trigger("dragend", {
+
+                $element.trigger("dragend", {
                     top: e.pageY - offset.y,
                     left: e.pageX - offset.x
                 });
             };
-            element.bind("mousedown.draggableTouch", function (e) {
-                var pos = element.position();
+
+            $element.bind("mousedown.draggableTouch", function (e) {
+                var pos = $element.position();
+
                 offset = {
                     x: e.pageX - pos.left,
                     y: e.pageY - pos.top
                 };
+
                 $(document).bind("mousemove.draggableTouch", move);
-                element.bind("mouseup.draggableTouch", up);
-                element.trigger("dragstart", pos);
+                $element.bind("mouseup.draggableTouch", up);
+                $element.trigger("dragstart", pos);
+
+                //VDWWD: move div to top with z-index
+                var $elementZindex = $element.css('z-index');
+                if (isNaN($elementZindex)) {
+                    $elementZindex = z_index;
+                }
+                z_index++;
+                $element.css('z-index', z_index);
+                console.log(z_index)
 
                 //VDWWD: turned off preventDefault otherwise input elements in the div won't work
                 //e.preventDefault();
             });
         });
+
         return this;
     };
 
 
     //VDWWD: separate function to keep the element withing the viewport and apply the corrected css
-    function setCss(element, top, left) {
+    function setCss($element, top, left) {
         //check if the element does not exceed the viewport at the top of bottom
         if (top < margin) {
             top = margin;
-        } else if (top + element.height() + margin + extra_margin_bottom > window.innerHeight) {
-            top = window.innerHeight - margin - element.height() - extra_margin_bottom;
+        } else if (top + $element.height() + margin + extra_margin_bottom > window.innerHeight) {
+            top = window.innerHeight - margin - $element.height() - extra_margin_bottom;
         }
 
         //check if the element does not exceed the viewport at the left of right
         if (left < margin) {
             left = margin;
-        } else if (left + element.width() + margin + extra_margin_right > window.innerWidth) {
-            left = window.innerWidth - margin - element.width() - extra_margin_right;
-            console.log(element.width())
+        } else if (left + $element.width() + margin + extra_margin_right > window.innerWidth) {
+            left = window.innerWidth - margin - $element.width() - extra_margin_right;
         }
 
         //apply the position
-        element.css({
+        $element.css({
             top: top,
             left: left,
         });
     }
-
 })(jQuery);
