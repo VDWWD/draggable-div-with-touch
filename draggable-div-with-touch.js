@@ -3,7 +3,7 @@
     //VDWWD: declare some extra variables
     var margin = 10;
     var extra_margin_right = 0;
-    var extra_margin_bottom = 5;
+    var extra_margin_bottom = 0;
     var z_index = 100;
 
     //VDWWD: extra margin right when there is a vertical scrollbar
